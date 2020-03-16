@@ -10,6 +10,8 @@
 # Google's Python Class
 # http://code.google.com/edu/languages/google-python-class/
 
+__author__ = "Janelle Kuhns and class demo"
+
 import sys
 import re
 import argparse
@@ -46,25 +48,40 @@ def extract_names(filename):
     ['2006', 'Aaliyah 91', Aaron 57', 'Abagail 895', ' ...]
     """
     names = []
-    # +++your code here+++
-    return names
+    with open(filename, 'r') as file:
+        
+        find_year = re.search(r'Popularity\sin\s(\d\d\d\d)', file)
+        if not find_year:
+            sys.stderr.write("No year found")
+            sys.exit(1)
+        year = find_year.group(1)
+        names.append(year)
 
+        tuples = re.findall(r'<td>(\d+)</td><td>(\w+)</td>\<td>(\w+)</td>', file)
+
+        name_ranks = {}
+        for rank_tuple in tuples:
+            (rank, boyname, girlname) = rank_tuple
+            if boyname not in name_ranks:
+                name_ranks[boyname] = rank
+            if girlname not in name_ranks:
+                name_ranks[girlname] = rank
+
+        sorted_names = sorted(name_ranks.keys())
+
+        for name in sorted_names:
+            names.append(name + ' ' + name_ranks[name])
+
+        return names
 
 def create_parser():
-    """Create a cmd line parser object with 2 argument definitions"""
-    parser = argparse.ArgumentParser(description="Extracts and alphabetizes baby names from html.")
-    parser.add_argument(
-        '--summaryfile', help='creates a summary file', action='store_true')
-    # The nargs option instructs the parser to expect 1 or more filenames.
-    # It will also expand wildcards just like the shell, e.g. 'baby*.html' will work.
+    parser = argparse.ArgumentParser(description="Extracts and alphabetizes baby names from HTML")
+    parser.add_argument('--summaryfile', help='create a summary file', action="store_true")
     parser.add_argument('files', help='filename(s) to parse', nargs='+')
     return parser
 
-
 def main(args):
-    # Create a command-line parser object with parsing rules
     parser = create_parser()
-    # Run the parser to collect command-line arguments into a NAMESPACE called 'ns'
     ns = parser.parse_args(args)
 
     if not ns:
@@ -73,16 +90,22 @@ def main(args):
 
     file_list = ns.files
 
-    # option flag
     create_summary = ns.summaryfile
 
-    # For each filename, call `extract_names` with that single file.
-    # Format the resulting list a vertical list (separated by newline \n)
-    # Use the create_summary flag to decide whether to print the list,
-    # or to write the list to a summary file e.g. `baby1990.html.summary`
+    for filename in file_list:
+        print("Working on file: {}".format(filename))
+        names = extract_names(filename)
 
-    # +++your code here+++
+    text = '\n'.join(names)
 
+    if create_summary:
+        with open(filename + '.summary', 'w') as output_file:
+            output_file.write(text + '\n')
+    
+    else:
+        print(text)
+
+    
 
 if __name__ == '__main__':
     main(sys.argv[1:])
