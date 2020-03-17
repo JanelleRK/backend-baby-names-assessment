@@ -31,8 +31,7 @@ def extract_names(filename):
         tuples = re.findall(r'<td>(\d+)</td><td>(\w+)</td>\<td>(\w+)</td>', text)
 
         name_ranks = {}
-        for rank_tuple in tuples:
-            (rank, boyname, girlname) = rank_tuple
+        for rank, boyname, girlname in tuples:
             if boyname not in name_ranks:
                 name_ranks[boyname] = rank
             if girlname not in name_ranks:
@@ -63,18 +62,14 @@ def main(args):
 
     create_summary = ns.summaryfile
 
-    for filename in file_list:
-        print("Working on file: {}".format(filename))
-        names = extract_names(filename)
-
-    text = '\n'.join(names)
-
-    if create_summary:
-        with open(filename + '.summary', 'w') as output_file:
-            output_file.write(text + '\n')
-    
-    else:
-        print(text)
+    for file in file_list:
+        name_list = extract_names(file)
+        text = '\n'.join(name_list)
+        if create_summary:
+            with open(file + '.summary', 'w') as output_file:
+                output_file.write(text + '\n')
+        else:
+            print(text)
 
     
 
